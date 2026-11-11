@@ -2,11 +2,11 @@
 
 [![CI](https://github.com/dwoitzik/terraform-azurerm-openai-rag/actions/workflows/tf-linter.yml/badge.svg)](https://github.com/dwoitzik/terraform-azurerm-openai-rag/actions/workflows/tf-linter.yml)
 
-> **Status: v0.1.0 — pre-1.0.** CI runs `terraform fmt`, `validate`, and `tflint` on every push, but this has never been through `terraform plan`/`apply` against a real Azure subscription. That proves syntax, not that it works. Reaching 1.0 needs a real plan-and-apply pass, which needs the operator (an Azure subscription, credentials, and someone watching the apply).
+> **Status: v0.1.0 (pre-1.0).** CI runs `terraform fmt`, `validate`, and `tflint` on every push, but this has never been through `terraform plan`/`apply` against a real Azure subscription. That proves syntax, not that it works. Reaching 1.0 needs a real plan-and-apply pass, which needs the operator (an Azure subscription, credentials, and someone watching the apply).
 
 Infrastructure-as-Code for wiring up Azure AI Search and Azure OpenAI for Retrieval-Augmented Generation (RAG) workloads without exposing either service to the public internet or relying on API keys.
 
-Both services sit behind Private Endpoints on a dedicated subnet, with matching Private DNS zones linked to the VNet, and AI Search reaches OpenAI via a System-Assigned Managed Identity with `Cognitive Services OpenAI User` RBAC — no shared keys, no manual Private Endpoint approval step, no public network access enabled anywhere in the path.
+Both services sit behind Private Endpoints on a dedicated subnet, with matching Private DNS zones linked to the VNet, and AI Search reaches OpenAI via a System-Assigned Managed Identity with `Cognitive Services OpenAI User` RBAC: no shared keys, no manual Private Endpoint approval step, no public network access enabled anywhere in the path.
 
 ```text
                     ┌──────────────────────────┐
@@ -23,21 +23,21 @@ Both services sit behind Private Endpoints on a dedicated subnet, with matching 
           both public_network_access_enabled = false
 ```
 
-## 🚀 Features
+## Features
 
-- **VNet-Isolated** — Both services reachable only via Private Endpoint; `public_network_access_enabled = false` on both.
-- **Identity Chaining, No Keys** — AI Search authenticates to OpenAI via its own Managed Identity and an RBAC role assignment, not a shared access key.
-- **Automated Private DNS** — `privatelink.openai.azure.com` and `privatelink.search.windows.net` zones created and linked to the VNet, so name resolution just works.
+- **VNet-Isolated**: both services reachable only via Private Endpoint; `public_network_access_enabled = false` on both.
+- **Identity Chaining, No Keys**: AI Search authenticates to OpenAI via its own Managed Identity and an RBAC role assignment, not a shared access key.
+- **Automated Private DNS**: `privatelink.openai.azure.com` and `privatelink.search.windows.net` zones created and linked to the VNet, so name resolution just works.
 - **Deny-by-default NSG** on the Private Endpoints subnet.
-- **Parametrized Inputs** — Clean `variables.tf`, no hardcoded values.
+- **Parametrized Inputs**: clean `variables.tf`, no hardcoded values.
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - Terraform `>= 1.5.0`
 - Azure CLI (`az login`)
 - Active Azure Subscription with permissions to create Cognitive Services and AI Search instances
 
-## 📖 Usage
+## Usage
 
 **1. Clone the repository**
 
@@ -68,9 +68,9 @@ terraform plan
 terraform apply
 ```
 
-Since both services are VNet-isolated, you'll need a client inside the VNet (a jumpbox, VPN, or peered network) to actually query them after deploying — that's the point.
+Since both services are VNet-isolated, you'll need a client inside the VNet (a jumpbox, VPN, or peered network) to actually query them after deploying. That's the point.
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 .
@@ -82,7 +82,7 @@ Since both services are VNet-isolated, you'll need a client inside the VNet (a j
 └── README.md
 ```
 
-## 📤 Outputs
+## Outputs
 
 | Output | Description |
 |--------|-------------|
@@ -91,22 +91,22 @@ Since both services are VNet-isolated, you'll need a client inside the VNet (a j
 | `search_private_endpoint_ip` | Internal IP of the Azure AI Search Private Endpoint |
 | `rbac_assignment_id` | The RBAC role assignment granting Search access to OpenAI |
 
-## ⚠️ Known Limitations
+## Known Limitations
 
-This module creates its own VNet (`10.0.0.0/16`) rather than injecting into an existing one — if you want this peered into a larger hub-and-spoke topology, peer `azurerm_virtual_network.vnet` manually or adapt the module to accept an existing VNet (see [azure-acme-cert-automation](https://github.com/dwoitzik/azure-acme-cert-automation) for that pattern). It also doesn't provision the client/jumpbox you'll need to actually reach these VNet-isolated endpoints.
-
----
-
-## 📖 Deep Dive
-
-Read the full technical breakdown — Private DNS automation, Identity Chaining, and why the old Shared-Private-Link-auto-approval approach was replaced with Private Endpoints:
-
-**[Automating Azure OpenAI RAG with Zero-Trust Networking →](https://woitzik.dev/blog/azure-rag-shared-private-link-automation)**
+This module creates its own VNet (`10.0.0.0/16`) rather than injecting into an existing one. If you want this peered into a larger hub-and-spoke topology, peer `azurerm_virtual_network.vnet` manually or adapt the module to accept an existing VNet (see [azure-acme-cert-automation](https://github.com/dwoitzik/azure-acme-cert-automation) for that pattern). It also doesn't provision the client/jumpbox you'll need to actually reach these VNet-isolated endpoints.
 
 ---
 
-## 📄 License
+## Write-up
 
-MIT — free to use, modify, and distribute.
+Read the full technical breakdown (Private DNS automation, Identity Chaining, and why the old Shared-Private-Link-auto-approval approach was replaced with Private Endpoints):
+
+**[Automating Azure OpenAI RAG with Zero-Trust Networking →](https://woitzik.dev/blog/azure-rag-shared-private-link-automation/)**
+
+---
+
+## License
+
+MIT: free to use, modify, and distribute.
 
 *Built by [David Woitzik](https://woitzik.dev) · [LinkedIn](https://linkedin.com/in/david-woitzik)*
